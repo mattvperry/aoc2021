@@ -22,7 +22,7 @@ export async function* streamInputLinesAsync<T extends Day>(
 
         const lines = current.split('\n');
         const [before, after] = splitAt(lines, lines.length - 1);
-        yield* before.map((l) => l.trim());
+        yield* before.map(l => l.trim());
         [current] = after;
     }
 
@@ -169,9 +169,9 @@ export const repeatFn = <T>(x: T, times: number, fn: (x: T) => T): T => {
 };
 
 export const intersect = <T>(xs: Set<T>, ys: Set<T>): Set<T> =>
-    new Set([...xs].filter((x) => ys.has(x)));
+    new Set([...xs].filter(x => ys.has(x)));
 
 export const difference = <T>(xs: Set<T>, ys: Set<T>): Set<T> =>
-    new Set([...xs].filter((x) => !ys.has(x)));
+    new Set([...xs].filter(x => !ys.has(x)));
 
 export const mod = (n: number, m: number): number => ((n % m) + m) % m;

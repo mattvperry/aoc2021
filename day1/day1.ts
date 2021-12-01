@@ -5,7 +5,7 @@ const day1 = (data: number[], space: number): number =>
 
 (async () => {
     const input = await readInputLines('day1');
-    const set = input.map((l) => parseInt(l, 10));
+    const set = input.map(l => parseInt(l, 10));
 
     console.log(day1(set, 1));
     console.log(day1(set, 3));
