@@ -1,2 +1,2 @@
-# aoc2020
-Advent of Code 2020 in TS
+# aoc2021
+Advent of Code 2021 in TS
