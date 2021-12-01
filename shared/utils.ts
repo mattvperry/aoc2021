@@ -4,49 +4,11 @@ import path from 'path';
 export type Day = `day${number}`;
 
 export type FromEntries<T> = T extends readonly [PropertyKey, infer V]
-    ? { [X in T[0]]?: V }
+    ? { [X in T[0]]: V }
     : never;
-export type Entries<T> = T extends { [K in keyof T]: infer V }
-    ? readonly [keyof T, V]
-    : never;
-
-export async function* streamInputLinesAsync<T extends Day>(
-    day: T,
-): AsyncIterableIterator<string> {
-    let current = '';
-    for await (const x of fs.createReadStream(path.join(day, 'input.txt'))) {
-        current = current + x;
-        if (!current.includes('\n')) {
-            continue;
-        }
-
-        const lines = current.split('\n');
-        const [before, after] = splitAt(lines, lines.length - 1);
-        yield* before.map(l => l.trim());
-        [current] = after;
-    }
-
-    yield current.trim();
-}
-
-export const arrayFromAsyncGenerator = <T>(
-    gen: AsyncIterableIterator<T>,
-): Promise<T[]> =>
-    reduceAsync(gen, [] as T[], async (acc, curr) => [...acc, curr]);
-
-export function* zipper<T>(data: Iterable<T>): IterableIterator<[T[], T, T[]]> {
-    let init: T[] = [];
-    let [head, ...tail] = data;
-    while (tail.length >= 0) {
-        yield [init, head, tail];
-        if (tail.length === 0) {
-            break;
-        }
-
-        init = [...init, head];
-        [head, ...tail] = tail;
-    }
-}
+export type Entries<T> = {
+    [K in keyof T]: [K, T[K]];
+}[keyof T];
 
 export function* map<T, U>(data: Iterable<T>, fn: (curr: T) => U): Iterable<U> {
     for (const x of data) {
@@ -89,9 +51,46 @@ export const reduceAsync = async <T, U>(
     return acc;
 };
 
+export const arrayFromAsyncGenerator = <T>(
+    gen: AsyncIterableIterator<T>,
+): Promise<T[]> =>
+    reduceAsync(gen, [] as T[], async (acc, curr) => [...acc, curr]);
+
+export async function* streamInputLinesAsync<T extends Day>(
+    day: T,
+): AsyncIterableIterator<string> {
+    let current = '';
+    for await (const x of fs.createReadStream(path.join(day, 'input.txt'))) {
+        current = current + x;
+        if (!current.includes('\n')) {
+            continue;
+        }
+
+        const lines = current.split('\n');
+        const [before, after] = splitAt(lines, lines.length - 1);
+        yield* before.map(l => l.trim());
+        [current] = after;
+    }
+
+    yield current.trim();
+}
+
 export const readInputLines = <T extends Day>(day: T) =>
     arrayFromAsyncGenerator(streamInputLinesAsync(day));
 
+export function* zipper<T>(data: Iterable<T>): IterableIterator<[T[], T, T[]]> {
+    let init: T[] = [];
+    let [head, ...tail] = data;
+    while (tail.length >= 0) {
+        yield [init, head, tail];
+        if (tail.length === 0) {
+            break;
+        }
+
+        init = [...init, head];
+        [head, ...tail] = tail;
+    }
+}
 export const charFrequency = (input: string): { [k: string]: number } => {
     return input.split('').reduce((acc, curr) => {
         acc[curr] = acc[curr] ? acc[curr] + 1 : 1;
@@ -142,6 +141,9 @@ export const isDefined = <T>(x: T | undefined): x is T => x !== undefined;
 
 export const countBy = <T>(data: Iterable<T>, fn: (x: T) => boolean): number =>
     reduce(data, 0, (acc, curr) => acc + (fn(curr) ? 1 : 0));
+
+export const entries = <T>(obj: T): Entries<T>[] =>
+    Object.entries(obj) as Entries<T>[];
 
 export const fromEntries = <T extends readonly [PropertyKey, any]>(
     entries: Iterable<T>,
