@@ -16,40 +16,58 @@ export function* map<T, U>(data: Iterable<T>, fn: (curr: T) => U): Iterable<U> {
     }
 }
 
-export async function* mapAsync<T, U>(
-    data: AsyncIterable<T>,
-    fn: (curr: T) => Promise<U>,
-): AsyncIterableIterator<U> {
-    for await (const x of data) {
-        yield await fn(x);
-    }
-}
-
-export const reduce = <T, U>(
+export function reduce<T, U>(
     data: Iterable<T>,
     seed: U,
     fn: (acc: U, curr: T) => U,
-): U => {
+): U {
     let acc = seed;
     for (const x of data) {
         acc = fn(acc, x);
     }
 
     return acc;
-};
+}
 
-export const reduceAsync = async <T, U>(
+export function mapAsync<T, U>(
+    data: AsyncIterable<T>,
+    fn: (curr: T) => Promise<U>,
+): AsyncIterableIterator<U>;
+export function mapAsync<T, U>(
+    data: AsyncIterable<T>,
+    fn: (curr: T) => U,
+): AsyncIterableIterator<U>;
+export async function* mapAsync<T, U>(
+    data: AsyncIterable<T>,
+    fn: ((curr: T) => Promise<U>) | ((curr: T) => U),
+): AsyncIterableIterator<U> {
+    for await (const x of data) {
+        yield await Promise.resolve(fn(x));
+    }
+}
+
+export function reduceAsync<T, U>(
     data: AsyncIterable<T>,
     seed: U,
     fn: (acc: U, curr: T) => Promise<U>,
-): Promise<U> => {
+): Promise<U>;
+export function reduceAsync<T, U>(
+    data: AsyncIterable<T>,
+    seed: U,
+    fn: (acc: U, curr: T) => U,
+): Promise<U>;
+export async function reduceAsync<T, U>(
+    data: AsyncIterable<T>,
+    seed: U,
+    fn: ((acc: U, curr: T) => Promise<U>) | ((acc: U, curr: T) => U),
+): Promise<U> {
     let acc = seed;
     for await (const x of data) {
-        acc = await fn(acc, x);
+        acc = await Promise.resolve(fn(acc, x));
     }
 
     return acc;
-};
+}
 
 export const arrayFromAsyncGenerator = <T>(
     gen: AsyncIterableIterator<T>,
@@ -177,3 +195,8 @@ export const difference = <T>(xs: Set<T>, ys: Set<T>): Set<T> =>
     new Set([...xs].filter(x => !ys.has(x)));
 
 export const mod = (n: number, m: number): number => ((n % m) + m) % m;
+
+export const isLiteral = <T extends readonly string[]>(
+    x: string,
+    xs: T,
+): x is T[number] => xs.includes(x);
