@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import readline from 'readline';
 
 export type Day = `day${number}`;
 
@@ -70,30 +71,20 @@ export async function reduceAsync<T, U>(
 }
 
 export const arrayFromAsyncGenerator = <T>(
-    gen: AsyncIterableIterator<T>,
-): Promise<T[]> =>
-    reduceAsync(gen, [] as T[], async (acc, curr) => [...acc, curr]);
+    gen: AsyncIterable<T>,
+): Promise<T[]> => reduceAsync<T, T[]>(gen, [], (acc, curr) => [...acc, curr]);
 
 export async function* streamInputLinesAsync<T extends Day>(
     day: T,
 ): AsyncIterableIterator<string> {
-    let current = '';
-    for await (const x of fs.createReadStream(path.join(day, 'input.txt'))) {
-        current = current + x;
-        if (!current.includes('\n')) {
-            continue;
-        }
-
-        const lines = current.split('\n');
-        const [before, after] = splitAt(lines, lines.length - 1);
-        yield* before.map(l => l.trim());
-        [current] = after;
-    }
-
-    yield current.trim();
+    const fileStream = fs.createReadStream(path.join(day, 'input.txt'));
+    yield* readline.createInterface({
+        input: fileStream,
+        crlfDelay: Infinity,
+    });
 }
 
-export const readInputLines = <T extends Day>(day: T) =>
+export const readInputLines = <T extends Day>(day: T): Promise<string[]> =>
     arrayFromAsyncGenerator(streamInputLinesAsync(day));
 
 export function* zipper<T>(data: Iterable<T>): IterableIterator<[T[], T, T[]]> {
@@ -109,6 +100,7 @@ export function* zipper<T>(data: Iterable<T>): IterableIterator<[T[], T, T[]]> {
         [head, ...tail] = tail;
     }
 }
+
 export const charFrequency = (input: string): { [k: string]: number } => {
     return input.split('').reduce((acc, curr) => {
         acc[curr] = acc[curr] ? acc[curr] + 1 : 1;
