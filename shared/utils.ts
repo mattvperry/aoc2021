@@ -101,11 +101,18 @@ export function* zipper<T>(data: Iterable<T>): IterableIterator<[T[], T, T[]]> {
     }
 }
 
-export const charFrequency = (input: string): { [k: string]: number } => {
-    return input.split('').reduce((acc, curr) => {
-        acc[curr] = acc[curr] ? acc[curr] + 1 : 1;
-        return acc;
-    }, {} as ReturnType<typeof charFrequency>);
+export const charFrequency = <T extends string>(
+    input: T | T[],
+): Record<T, number> => {
+    const chars = Array.isArray(input) ? input : input.split('');
+    return reduce(
+        chars,
+        {} as ReturnType<typeof charFrequency>,
+        (acc, curr) => {
+            acc[curr] = acc[curr] ? acc[curr] + 1 : 1;
+            return acc;
+        },
+    );
 };
 
 export const memoize = <P extends any[], R, K extends PropertyKey>(
