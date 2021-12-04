@@ -142,6 +142,18 @@ export const splitOn = <T>(xs: T[], on: T): [T[], T[]] => {
     return [xs.slice(0, idx), xs.slice(idx + 1, xs.length)];
 };
 
+export function* splitOnEvery<T>(xs: T[], on: T): IterableIterator<T[]> {
+    let [first, rest] = splitOn(xs, on);
+    while (true) {
+        yield first;
+        if (rest.length === 0) {
+            break;
+        }
+
+        [first, rest] = splitOn(rest, on);
+    }
+}
+
 type Sliceable = {
     slice: (start?: number, end?: number) => any;
     length: number;
@@ -165,6 +177,17 @@ export const entries = <T>(obj: T): Entries<T>[] =>
 export const fromEntries = <T extends readonly [PropertyKey, any]>(
     entries: Iterable<T>,
 ): FromEntries<T> => Object.fromEntries(entries) as FromEntries<T>;
+
+export const partition = <T>(xs: T[], fn: (x: T) => boolean): [T[], T[]] => {
+    const on: T[] = [];
+    const off: T[] = [];
+    for (const x of xs) {
+        const edit = fn(x) ? on : off;
+        edit.push(x);
+    }
+
+    return [on, off];
+};
 
 export const zipWith = <T, U>(xs: T[], ys: T[], fn: (a: T, b: T) => U): U[] => {
     if (xs.length === 0 || ys.length === 0) {
