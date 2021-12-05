@@ -70,6 +70,15 @@ export async function reduceAsync<T, U>(
     return acc;
 }
 
+export function* concatMap<T, U>(
+    data: Iterable<T>,
+    fn: (x: T) => Iterable<U>,
+): Iterable<U> {
+    for (const x of data) {
+        yield* fn(x);
+    }
+}
+
 export const arrayFromAsyncGenerator = <T>(
     gen: AsyncIterable<T>,
 ): Promise<T[]> => reduceAsync<T, T[]>(gen, [], (acc, curr) => [...acc, curr]);
