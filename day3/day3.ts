@@ -1,4 +1,4 @@
-import { charFrequency, readInputLines } from '../shared/utils';
+import { frequency, readInputLines } from '../shared/utils';
 
 type Bit = '0' | '1';
 type Freqs = { gamma: Bit; epsilon: Bit };
@@ -8,7 +8,7 @@ const width = 12;
 const parse = (line: string): Bit[] => line.split('') as Bit[];
 
 const freqs = (input: Bit[][], column: number): Freqs => {
-    const stats = charFrequency(input.map(b => b[column]));
+    const stats = frequency(input.map(b => b[column]));
     return {
         gamma: stats['0'] > stats['1'] ? '0' : '1',
         epsilon: stats['0'] <= stats['1'] ? '0' : '1',
