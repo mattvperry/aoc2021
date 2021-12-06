@@ -110,7 +110,7 @@ export function* zipper<T>(data: Iterable<T>): IterableIterator<[T[], T, T[]]> {
     }
 }
 
-export const frequency = <T extends string>(
+export const frequency = <T extends PropertyKey>(
     input: Iterable<T>,
 ): Record<T, number> =>
     reduce(input, {} as ReturnType<typeof frequency>, (acc, curr) => {
@@ -180,6 +180,16 @@ export const entries = <T>(obj: T): Entries<T>[] =>
 export const fromEntries = <T extends readonly [PropertyKey, any]>(
     entries: Iterable<T>,
 ): FromEntries<T> => Object.fromEntries(entries) as FromEntries<T>;
+
+export const groupBy = <T, K extends PropertyKey>(
+    xs: Iterable<T>,
+    fn: (x: T) => K,
+): Record<K, T[]> =>
+    reduce(xs, {} as Record<K, T[]>, (acc, curr) => {
+        const key = fn(curr);
+        acc[key] = [...(acc[key] || []), curr];
+        return acc;
+    });
 
 export const partition = <T>(xs: T[], fn: (x: T) => boolean): [T[], T[]] => {
     const on: T[] = [];
