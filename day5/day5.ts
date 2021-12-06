@@ -39,7 +39,7 @@ const intersections = (lines: Line[]): number => {
     return countBy(Object.values(freq), x => x > 1);
 };
 
-const day1 = (lines: Line[]): [number, number] => [
+const day5 = (lines: Line[]): [number, number] => [
     intersections(lines.filter(straight)),
     intersections(lines),
 ];
@@ -48,7 +48,7 @@ const day1 = (lines: Line[]): [number, number] => [
     const input = await readInputLines('day5');
     const lines = input.map(parse);
 
-    const [part1, part2] = day1(lines);
+    const [part1, part2] = day5(lines);
     console.log(part1);
     console.log(part2);
 })();

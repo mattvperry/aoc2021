@@ -74,7 +74,7 @@ function* winners(nums: number[], boards: Board[]): IterableIterator<number> {
     }
 }
 
-const day1 = (nums: number[], boards: Board[]): [number, number] => {
+const day4 = (nums: number[], boards: Board[]): [number, number] => {
     const ws = Array.from(winners(nums, boards));
     return [ws[0], ws[ws.length - 1]];
 };
@@ -84,7 +84,7 @@ const day1 = (nums: number[], boards: Board[]): [number, number] => {
     const nums = parseNums(first, ',');
     const boards = Array.from(map(splitOnEvery(rest, ''), parseBoard));
 
-    const [part1, part2] = day1(nums, boards);
+    const [part1, part2] = day4(nums, boards);
     console.log(part1);
     console.log(part2);
 })();

@@ -1,57 +1,26 @@
-import {
-    groupBy,
-    map,
-    mapEntries,
-    readInputLines,
-    repeatFn,
-    sumBy,
-} from '../shared/utils';
-
-type Fish = {
-    age: number;
-    count: number;
-};
+import { frequency, readInputLines, repeatFn, sum } from '../shared/utils';
 
 const parse = (line: string): number[] =>
     line.split(',').map(a => parseInt(a, 10));
 
-const mergeFish = (fish: Iterable<Fish>): Fish[] => {
-    const byAge = groupBy(fish, ({ age }) => age);
-    const merged = mapEntries(byAge, ([age, groups]) => ({
-        age: parseInt(age, 10),
-        count: sumBy(groups, ({ count }) => count),
-    }));
+const advance = ([zero, ...rest]: number[]): number[] =>
+    [...rest, zero].map((c, i) => c + (i === 6 ? zero : 0));
 
-    return Array.from(merged);
-};
+function* day6(ages: number[]): IterableIterator<number> {
+    const freq = frequency(ages);
+    let fish = Array.from({ length: 9 }, (_, i) => freq[i] || 0);
 
-const advance = (fish: Fish[]): Fish[] => {
-    const aged = mergeFish(
-        map(fish, ({ age, count }) => ({
-            age: age === 0 ? 6 : age - 1,
-            count,
-        })),
-    );
-
-    const zeroes = fish.find(({ age }) => age === 0)?.count ?? 0;
-    return zeroes === 0 ? aged : [...aged, { age: 8, count: zeroes }];
-};
-
-function* day1(ages: number[]): IterableIterator<number> {
-    let fish = mergeFish(map(ages, age => ({ age, count: 1 })));
-
-    fish = repeatFn(fish, 80, advance);
-    yield sumBy(fish, ({ count }) => count);
-
-    fish = repeatFn(fish, 176, advance);
-    yield sumBy(fish, ({ count }) => count);
+    for (const times of [80, 176]) {
+        fish = repeatFn(fish, times, advance);
+        yield sum(fish);
+    }
 }
 
 (async () => {
     const [input] = await readInputLines('day6');
     const ages = parse(input);
 
-    const [part1, part2] = day1(ages);
+    const [part1, part2] = day6(ages);
     console.log(part1);
     console.log(part2);
 })();

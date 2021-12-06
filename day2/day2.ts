@@ -33,7 +33,7 @@ const part2: MoveSet = {
     up: ([x, d, a], amt) => [x, d, a - amt],
 };
 
-export const day1 = async (data: AsyncIterable<Command>) => {
+export const day2 = async (data: AsyncIterable<Command>) => {
     const seed: readonly [Position, Position] = [
         [0, 0, 0],
         [0, 0, 0],
@@ -53,7 +53,7 @@ export const day1 = async (data: AsyncIterable<Command>) => {
     const input = streamInputLinesAsync('day2');
     const cmds = mapAsync(input, l => parse(l));
 
-    const [part1, part2] = await day1(cmds);
+    const [part1, part2] = await day2(cmds);
     console.log(part1);
     console.log(part2);
 })();
