@@ -8,7 +8,7 @@ export type FromEntries<T> = T extends readonly [PropertyKey, infer V]
     ? { [X in T[0]]: V }
     : never;
 export type Entries<T> = {
-    [K in keyof T]: [K, T[K]];
+    [K in keyof T]: [K extends number ? `${K}` : K, T[K]];
 }[keyof T];
 
 export function* map<T, U>(data: Iterable<T>, fn: (curr: T) => U): Iterable<U> {
@@ -79,6 +79,15 @@ export function* concatMap<T, U>(
     }
 }
 
+export function* mapEntries<T, U>(
+    data: T,
+    fn: (x: Entries<T>) => U,
+): Iterable<U> {
+    for (const x of entries(data)) {
+        yield fn(x);
+    }
+}
+
 export const arrayFromAsyncGenerator = <T>(
     gen: AsyncIterable<T>,
 ): Promise<T[]> => reduceAsync<T, T[]>(gen, [], (acc, curr) => [...acc, curr]);
@@ -109,6 +118,16 @@ export function* zipper<T>(data: Iterable<T>): IterableIterator<[T[], T, T[]]> {
         [head, ...tail] = tail;
     }
 }
+
+export const groupBy = <T, K extends PropertyKey>(
+    xs: Iterable<T>,
+    fn: (x: T) => K,
+): Record<K, T[]> =>
+    reduce(xs, {} as Record<K, T[]>, (acc, curr) => {
+        const key = fn(curr);
+        acc[key] = [...(acc[key] || []), curr];
+        return acc;
+    });
 
 export const frequency = <T extends PropertyKey>(
     input: Iterable<T>,
@@ -171,8 +190,14 @@ export const splitAt = <T extends Sliceable>(
 
 export const isDefined = <T>(x: T | undefined): x is T => x !== undefined;
 
+export const sum = (data: Iterable<number>): number =>
+    reduce(data, 0, (acc, curr) => acc + curr);
+
+export const sumBy = <T>(data: Iterable<T>, fn: (x: T) => number): number =>
+    sum(map(data, fn));
+
 export const countBy = <T>(data: Iterable<T>, fn: (x: T) => boolean): number =>
-    reduce(data, 0, (acc, curr) => acc + (fn(curr) ? 1 : 0));
+    sumBy(data, x => (fn(x) ? 1 : 0));
 
 export const entries = <T>(obj: T): Entries<T>[] =>
     Object.entries(obj) as Entries<T>[];
@@ -180,16 +205,6 @@ export const entries = <T>(obj: T): Entries<T>[] =>
 export const fromEntries = <T extends readonly [PropertyKey, any]>(
     entries: Iterable<T>,
 ): FromEntries<T> => Object.fromEntries(entries) as FromEntries<T>;
-
-export const groupBy = <T, K extends PropertyKey>(
-    xs: Iterable<T>,
-    fn: (x: T) => K,
-): Record<K, T[]> =>
-    reduce(xs, {} as Record<K, T[]>, (acc, curr) => {
-        const key = fn(curr);
-        acc[key] = [...(acc[key] || []), curr];
-        return acc;
-    });
 
 export const partition = <T>(xs: T[], fn: (x: T) => boolean): [T[], T[]] => {
     const on: T[] = [];
