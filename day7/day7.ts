@@ -1,25 +1,28 @@
-import { map, memoize, readInputLines, sum } from '../shared/utils';
+import { readInputLines, sum, sumBy } from '../shared/utils';
 
 const parse = (line: string): number[] =>
     line.split(',').map(a => parseInt(a, 10));
 
-const part1 = (nums: number[]): number => calculate(
-    nums,
-    x => x,
-);
+const median = (nums: number[]): number => {
+    const half = Math.floor(nums.length / 2);
+    const sorted = nums.slice().sort((a, b) => a - b);
 
-const part2 = (nums: number[]): number => calculate(
-    nums,
-    x => (x * (x + 1)) / 2,
-);
+    return nums.length % 2 === 1
+        ? sorted[half]
+        : (sorted[half - 1] + sorted[half]) / 2;
+};
 
-const fuel = (nums: number[], transform: (amt: number) => number) => (end: number): number =>
-    sum(map(nums, n => transform(Math.abs(end - n))));
+const avg = (nums: number[]): number => Math.floor(sum(nums) / nums.length);
 
-const calculate = (nums: number[], transform: (amt: number) => number): number => {
-    const fn = memoize(fuel(nums, transform), e => e);
-    return Math.min(...map(nums, fn));
-}
+const calculate =
+    (find: (nums: number[]) => number, fn: (num: number) => number) =>
+    (nums: number[]): number => {
+        const target = find(nums);
+        return sumBy(nums, n => fn(Math.abs(target - n)));
+    };
+
+const part1 = calculate(median, x => x);
+const part2 = calculate(avg, x => (x * (x + 1)) / 2);
 
 (async () => {
     const [input] = await readInputLines('day7');
