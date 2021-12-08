@@ -4,9 +4,6 @@ import readline from 'readline';
 
 export type Day = `day${number}`;
 
-export type FromEntries<T> = T extends readonly [PropertyKey, infer V]
-    ? { [X in T[0]]: V }
-    : never;
 export type Entries<T> = {
     [K in keyof T]: [K extends number ? `${K}` : K, T[K]];
 }[keyof T];
@@ -202,10 +199,6 @@ export const countBy = <T>(data: Iterable<T>, fn: (x: T) => boolean): number =>
 export const entries = <T>(obj: T): Entries<T>[] =>
     Object.entries(obj) as Entries<T>[];
 
-export const fromEntries = <T extends readonly [PropertyKey, any]>(
-    entries: Iterable<T>,
-): FromEntries<T> => Object.fromEntries(entries) as FromEntries<T>;
-
 export const partition = <T>(xs: T[], fn: (x: T) => boolean): [T[], T[]] => {
     const on: T[] = [];
     const off: T[] = [];
@@ -237,6 +230,9 @@ export const repeatFn = <T>(x: T, times: number, fn: (x: T) => T): T => {
 
     return x;
 };
+
+export const isSubset = <T>(x: Set<T>, y: Set<T>): boolean =>
+    reduce(x, true as boolean, (acc, curr) => acc && y.has(curr));
 
 export const intersect = <T>(xs: Set<T>, ys: Set<T>): Set<T> =>
     new Set([...xs].filter(x => ys.has(x)));
