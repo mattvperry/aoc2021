@@ -1,66 +1,81 @@
-import { isDefined, map, readInputLines, reduce, sumBy } from '../shared/utils';
+import { isDefined, readInputLines, reduce, size } from '../shared/utils';
 
+type CoordS = `${number},${number}`;
 type Coord = [number, number];
-type Grid = readonly number[][];
+type Grid = Map<CoordS, number>;
 
-const toStr = ([x, y]: Coord): string => `${x},${y}`;
-const parse = (line: string): number[] => line.split('').map(x => parseInt(x, 10));
+const toStr = ([x, y]: Coord): CoordS => `${x},${y}`;
+const fromStr = (coord: CoordS): Coord =>
+    coord.split(',').map(x => parseInt(x, 10)) as Coord;
 
-const risk = (x: number): number => x + 1;
+const parse = (lines: string[]): Grid => {
+    const grid = new Map<CoordS, number>();
 
-const neighboors = ([x, y]: Coord): Coord[] => [
-    [x + 1, y],
-    [x - 1, y],
-    [x, y + 1],
-    [x, y - 1],
-];
+    for (let x = 0; x < lines.length; ++x) {
+        for (let y = 0; y < lines[0].length; ++y) {
+            grid.set(toStr([x, y]), parseInt(lines[x][y], 10));
+        }
+    }
 
-function* lowest(grid: Grid): IterableIterator<Coord> {
-    for (let x = 0; x < grid.length; ++x) {
-        for (let y = 0; y < grid[0].length; ++y) {
-            const ns = neighboors([x, y])
-                .map(([xn, yn]) => grid[xn]?.[yn])
-                .filter(isDefined);
+    return grid;
+};
 
-            if (grid[x][y] < Math.min(...ns)) {
-                yield [x, y];
-            }
+const neighbors = (grid: Grid, coord: CoordS): [CoordS, number][] => {
+    const [x, y] = fromStr(coord);
+    const coords = [
+        [x + 1, y],
+        [x - 1, y],
+        [x, y + 1],
+        [x, y - 1],
+    ];
+
+    return coords
+        .map(([x, y]) => toStr([x, y]))
+        .filter(k => grid.has(k))
+        .map(k => [k, grid.get(k)!]);
+};
+
+function* lowest(grid: Grid): ReturnType<Grid['entries']> {
+    for (const [c, v] of grid.entries()) {
+        const ns = neighbors(grid, c).map(([_, v]) => v);
+        if (v < Math.min(...ns)) {
+            yield [c, v];
         }
     }
 }
 
-function* expand(grid: Grid, coord: Coord): IterableIterator<Coord> {
-    const seen = new Set<string>();
+function* expand(grid: Grid, coord: CoordS): IterableIterator<CoordS> {
+    const seen = new Set<CoordS>();
     const queue = [coord];
     while (queue.length !== 0) {
         const c = queue.pop();
-        if (!isDefined(c) || seen.has(toStr(c))) {
-            continue;
-        }
-
-        seen.add(toStr(c));
-        const [x, y] = c;
-        if (grid[x][y] === 9) {
+        if (!isDefined(c) || seen.has(c) || grid.get(c) === 9) {
             continue;
         }
 
         yield c;
-        queue.push(...neighboors(c).filter(([xn, yn]) => isDefined(grid[xn]?.[yn])));
+
+        seen.add(c);
+        queue.push(...neighbors(grid, c).map(([k]) => k));
     }
 }
 
-const part1 = (grid: Grid): number =>
-    sumBy(lowest(grid), ([x, y]) => risk(grid[x][y]));
+const day9 = (grid: Grid): [number, number] => {
+    const [risks, basins] = reduce(
+        lowest(grid),
+        [0, [] as number[]],
+        ([r, b], [c, v]) => [r + v + 1, [...b, size(expand(grid, c))]],
+    );
 
-const part2 = (grid: Grid): number => {
-    const [a, b, c] = Array.from(map(lowest(grid), c => Array.from(expand(grid, c)).length)).sort((a, b) => b - a);
-    return a * b * c;
-}
+    const [a, b, c] = basins.sort((a, b) => b - a);
+    return [risks, a * b * c];
+};
 
 (async () => {
     const input = await readInputLines('day9');
-    const grid = input.map(parse);
+    const grid = parse(input);
 
-    console.log(part1(grid));
-    console.log(part2(grid));
+    const [part1, part2] = day9(grid);
+    console.log(part1);
+    console.log(part2);
 })();

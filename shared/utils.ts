@@ -193,6 +193,8 @@ export const sum = (data: Iterable<number>): number =>
 export const sumBy = <T>(data: Iterable<T>, fn: (x: T) => number): number =>
     sum(map(data, fn));
 
+export const size = <T>(data: Iterable<T>) => sumBy(data, _ => 1);
+
 export const countBy = <T>(data: Iterable<T>, fn: (x: T) => boolean): number =>
     sumBy(data, x => (fn(x) ? 1 : 0));
 
