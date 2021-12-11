@@ -1,39 +1,5 @@
+import { CoordS, Grid, neighbors, parseGrid } from '../shared/grid';
 import { isDefined, readInputLines, reduce, size } from '../shared/utils';
-
-type CoordS = `${number},${number}`;
-type Coord = [number, number];
-type Grid = Map<CoordS, number>;
-
-const toStr = ([x, y]: Coord): CoordS => `${x},${y}`;
-const fromStr = (coord: CoordS): Coord =>
-    coord.split(',').map(x => parseInt(x, 10)) as Coord;
-
-const parse = (lines: string[]): Grid => {
-    const grid = new Map<CoordS, number>();
-
-    for (let x = 0; x < lines.length; ++x) {
-        for (let y = 0; y < lines[0].length; ++y) {
-            grid.set(toStr([x, y]), parseInt(lines[x][y], 10));
-        }
-    }
-
-    return grid;
-};
-
-const neighbors = (grid: Grid, coord: CoordS): [CoordS, number][] => {
-    const [x, y] = fromStr(coord);
-    const coords = [
-        [x + 1, y],
-        [x - 1, y],
-        [x, y + 1],
-        [x, y - 1],
-    ];
-
-    return coords
-        .map(([x, y]) => toStr([x, y]))
-        .filter(k => grid.has(k))
-        .map(k => [k, grid.get(k)!]);
-};
 
 function* lowest(grid: Grid): ReturnType<Grid['entries']> {
     for (const [c, v] of grid.entries()) {
@@ -73,7 +39,7 @@ const day9 = (grid: Grid): [number, number] => {
 
 (async () => {
     const input = await readInputLines('day9');
-    const grid = parse(input);
+    const grid = parseGrid(input);
 
     const [part1, part2] = day9(grid);
     console.log(part1);

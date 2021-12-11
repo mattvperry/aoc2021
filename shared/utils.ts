@@ -8,6 +8,17 @@ export type Entries<T> = {
     [K in keyof T]: [K extends number ? `${K}` : K, T[K]];
 }[keyof T];
 
+export function* take<T>(num: number, xs: Iterable<T>): IterableIterator<T> {
+    for (const x of xs) {
+        if (num === 0) {
+            break;
+        }
+
+        yield x;
+        num = num - 1;
+    }
+}
+
 export function* map<T, U>(data: Iterable<T>, fn: (curr: T) => U): Iterable<U> {
     for (const x of data) {
         yield fn(x);
@@ -232,6 +243,13 @@ export const repeatFn = <T>(x: T, times: number, fn: (x: T) => T): T => {
 
     return x;
 };
+
+export function* iterateFn<T>(fn: (x: T) => T, x: T): IterableIterator<T> {
+    while (true) {
+        yield x;
+        x = fn(x);
+    }
+}
 
 export const isSubset = <T>(x: Set<T>, y: Set<T>): boolean =>
     reduce(x, true as boolean, (acc, curr) => acc && y.has(curr));
