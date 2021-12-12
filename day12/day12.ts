@@ -1,11 +1,10 @@
 import { entries, readInputLines, sumBy } from '../shared/utils';
 
-type Path = [string, string];
 type Graph = Record<string, string[]>;
 
 const parse = (lines: string[]): Graph => {
     const graph: Graph = {};
-    const paths = lines.map(l => l.split('-') as Path);
+    const paths = lines.map(l => l.split('-'));
     for (const [a, b] of paths) {
         graph[a] = [b, ...(graph[a] ?? [])];
         graph[b] = [a, ...(graph[b] ?? [])];
