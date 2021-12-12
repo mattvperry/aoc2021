@@ -24,7 +24,7 @@ const search = (
     }
 
     const problems = entries(seen).filter(
-        ([n, x]) => /[a-z]+/.test(n) && x > 1,
+        ([n, x]) => n === n.toLocaleLowerCase() && x > 1,
     );
 
     if (problems.length > 0 && prune(problems)) {
@@ -37,21 +37,25 @@ const search = (
     );
 };
 
-const part1 = (graph: Graph): number =>
-    search(graph, 'start', { start: 1 }, _ => true);
+// For part1, if we have any problems at all then we
+// prune the branch.
+const part1 = () => true;
 
-const part2 = (graph: Graph): number =>
-    search(
-        graph,
-        'start',
-        { start: 1 },
-        ([[n, x], ...rest]) => rest.length !== 0 || n === 'start' || x > 2,
-    );
+// For part2, if we have more than one problem, or
+// we are visiting start again, or if we have visited
+// this more than twice then we prune the branch.
+const part2 = ([[n, x], ...rest]: [string, number][]): boolean =>
+    rest.length !== 0 || n === 'start' || x > 2;
+
+const day12 = (
+    graph: Graph,
+    prune: (problems: [string, number][]) => boolean,
+): number => search(graph, 'start', { start: 1 }, prune);
 
 (async () => {
     const input = await readInputLines('day12');
     const graph = parse(input);
 
-    console.log(part1(graph));
-    console.log(part2(graph));
+    console.log(day12(graph, part1));
+    console.log(day12(graph, part2));
 })();
