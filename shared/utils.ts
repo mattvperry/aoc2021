@@ -129,7 +129,7 @@ export function* zipper<T>(data: Iterable<T>): IterableIterator<[T[], T, T[]]> {
 
 export const groupBy = <T, K extends PropertyKey>(
     xs: Iterable<T>,
-    fn: (x: T) => K,
+    fn: (x: T) => K
 ): Record<K, T[]> =>
     reduce(xs, {} as Record<K, T[]>, (acc, curr) => {
         const key = fn(curr);
