@@ -15,7 +15,7 @@ const parse = (lines: string[]): [Grid, Fold[]] => {
     ];
 };
 
-const fold = (grid: Grid, [dir, line]: Fold): Grid => {
+const fold = (grid: Grid, [dir, axis]: Fold): Grid => {
     // We should be able to safely ignore x or y === line
     // because the input claims there's never a point on a line
     return new Set<CoordS>(
@@ -23,9 +23,9 @@ const fold = (grid: Grid, [dir, line]: Fold): Grid => {
             const [x, y] = fromStr(coord);
             switch (dir) {
                 case 'x':
-                    return toStr([x > line ? line - (x - line) : x, y]);
+                    return toStr([x > axis ? 2 * axis - x : x, y]);
                 case 'y':
-                    return toStr([x, y > line ? line - (y - line) : y]);
+                    return toStr([x, y > axis ? 2 * axis - y : y]);
             }
         }),
     );
