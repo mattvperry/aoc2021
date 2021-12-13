@@ -40,9 +40,8 @@ const search = (
         return 0;
     }
 
-    const edges = graph[node] ?? [];
-    return sumBy(edges, edge =>
-        search(graph, edge, { ...seen, [edge]: (seen[edge] ?? 0) + 1 }, prune),
+    return sumBy(graph[node] ?? [], next =>
+        search(graph, next, { ...seen, [next]: (seen[next] ?? 0) + 1 }, prune),
     );
 };
 
