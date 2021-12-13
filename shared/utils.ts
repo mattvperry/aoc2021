@@ -129,7 +129,7 @@ export function* zipper<T>(data: Iterable<T>): IterableIterator<[T[], T, T[]]> {
 
 export const groupBy = <T, K extends PropertyKey>(
     xs: Iterable<T>,
-    fn: (x: T) => K
+    fn: (x: T) => K,
 ): Record<K, T[]> =>
     reduce(xs, {} as Record<K, T[]>, (acc, curr) => {
         const key = fn(curr);
@@ -212,7 +212,10 @@ export const countBy = <T>(data: Iterable<T>, fn: (x: T) => boolean): number =>
 export const entries = <T>(obj: T): Entries<T>[] =>
     Object.entries(obj) as Entries<T>[];
 
-export const partition = <T>(xs: T[], fn: (x: T) => boolean): [T[], T[]] => {
+export const partition = <T>(
+    xs: Iterable<T>,
+    fn: (x: T) => boolean,
+): [T[], T[]] => {
     const on: T[] = [];
     const off: T[] = [];
     for (const x of xs) {
