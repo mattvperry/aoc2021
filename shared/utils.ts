@@ -293,6 +293,11 @@ export const intersect = <T>(xs: Set<T>, ys: Set<T>): Set<T> =>
 export const difference = <T>(xs: Set<T>, ys: Set<T>): Set<T> =>
     new Set([...xs].filter(x => !ys.has(x)));
 
+export const divMod = (x: number, y: number): [number, number] => [
+    Math.trunc(x / y),
+    mod(x, y),
+];
+
 export const mod = (n: number, m: number): number => ((n % m) + m) % m;
 
 export const isLiteral = <T extends readonly string[]>(
