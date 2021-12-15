@@ -8,6 +8,17 @@ export type Entries<T> = {
     [K in keyof T]: [K extends number ? `${K}` : K, T[K]];
 }[keyof T];
 
+export function* skip<T>(num: number, xs: Iterable<T>): IterableIterator<T> {
+    for (const x of xs) {
+        if (num !== 0) {
+            num = num - 1;
+            continue;
+        }
+
+        yield x;
+    }
+}
+
 export function* take<T>(num: number, xs: Iterable<T>): IterableIterator<T> {
     for (const x of xs) {
         if (num === 0) {
@@ -226,18 +237,26 @@ export const partition = <T>(
     return [on, off];
 };
 
-export const zipWith = <T, U>(xs: T[], ys: T[], fn: (a: T, b: T) => U): U[] => {
-    if (xs.length === 0 || ys.length === 0) {
-        return [];
+export function* zipWith<Tx, Ty, U>(
+    xs: Iterable<Tx>,
+    ys: Iterable<Ty>,
+    fn: (a: Tx, b: Ty) => U,
+): IterableIterator<U> {
+    const [ix, iy] = [xs[Symbol.iterator](), ys[Symbol.iterator]()];
+    while (true) {
+        const [x, y] = [ix.next(), iy.next()];
+        if (x.done || y.done) {
+            return;
+        }
+
+        yield fn(x.value, y.value);
     }
+}
 
-    const [x, ...xr] = xs;
-    const [y, ...yr] = ys;
-    return [fn(x, y), ...zipWith(xr, yr, fn)];
-};
-
-export const zip = <T>(xs: T[], ys: T[]): [T, T][] =>
-    zipWith(xs, ys, (x, y) => [x, y]);
+export const zip = <Tx, Ty>(
+    xs: Iterable<Tx>,
+    ys: Iterable<Ty>,
+): Iterable<[Tx, Ty]> => zipWith(xs, ys, (x, y) => [x, y]);
 
 export const repeatFn = <T>(x: T, times: number, fn: (x: T) => T): T => {
     for (let i = 0; i < times; ++i) {
@@ -246,6 +265,17 @@ export const repeatFn = <T>(x: T, times: number, fn: (x: T) => T): T => {
 
     return x;
 };
+
+export function* pairwise<T>(xs: Iterable<T>): IterableIterator<[T, T]> {
+    const it = xs[Symbol.iterator]();
+    let current = it.next();
+    let next = it.next();
+    while (!next.done) {
+        yield [current.value, next.value];
+        current = next;
+        next = it.next();
+    }
+}
 
 export function* iterateFn<T>(fn: (x: T) => T, x: T): IterableIterator<T> {
     while (true) {
