@@ -21,12 +21,25 @@ export function* skip<T>(num: number, xs: Iterable<T>): IterableIterator<T> {
 
 export function* take<T>(num: number, xs: Iterable<T>): IterableIterator<T> {
     for (const x of xs) {
+        yield x;
+        num = num - 1;
+
         if (num === 0) {
+            break;
+        }
+    }
+}
+
+export function* takeWhile<T>(
+    fn: (x: T) => boolean,
+    xs: Iterable<T>,
+): IterableIterator<T> {
+    for (const x of xs) {
+        if (!fn(x)) {
             break;
         }
 
         yield x;
-        num = num - 1;
     }
 }
 
