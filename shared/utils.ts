@@ -43,6 +43,19 @@ export function* takeWhile<T>(
     }
 }
 
+export function find<T>(
+    data: Iterable<T>,
+    fn: (curr: T) => boolean,
+): T | undefined {
+    for (const x of data) {
+        if (fn(x)) {
+            return x;
+        }
+    }
+
+    return undefined;
+}
+
 export function* map<T, U>(data: Iterable<T>, fn: (curr: T) => U): Iterable<U> {
     for (const x of data) {
         yield fn(x);
