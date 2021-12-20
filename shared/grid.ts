@@ -1,28 +1,32 @@
 export type CoordS = `${number},${number}`;
 export type Coord = [number, number];
-export type Grid = Map<CoordS, number>;
+export type Grid<T = number> = Map<CoordS, T>;
 
 export const toStr = ([x, y]: Coord): CoordS => `${x},${y}`;
 export const fromStr = (coord: CoordS): Coord =>
     coord.split(',').map(x => parseInt(x, 10)) as Coord;
 
-export const parseGrid = (lines: string[]): Grid => {
-    const grid = new Map<CoordS, number>();
+const asNum = (c: string): number => parseInt(c, 10);
 
-    for (let x = 0; x < lines.length; ++x) {
-        for (let y = 0; y < lines[0].length; ++y) {
-            grid.set(toStr([x, y]), parseInt(lines[x][y], 10));
+export function parseGrid(lines: string[]): Grid;
+export function parseGrid<T>(lines: string[], fn: (c: string) => T): Grid<T>;
+export function parseGrid<T>(lines: string[], fn?: (c: string) => T): Grid<T> {
+    const grid = new Map<CoordS, T>();
+
+    for (let y = 0; y < lines.length; ++y) {
+        for (let x = 0; x < lines[0].length; ++x) {
+            grid.set(toStr([x, y]), (fn ?? asNum)(lines[y][x]) as T);
         }
     }
 
     return grid;
-};
+}
 
-export const neighbors = (
-    grid: Grid,
+export const neighbors = <T = number>(
+    grid: Grid<T>,
     coord: CoordS,
     diag: boolean = false,
-): [CoordS, number][] => {
+): [CoordS, T][] => {
     const [x, y] = fromStr(coord);
     const coords = [
         [x + 1, y],
