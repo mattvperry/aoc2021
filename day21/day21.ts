@@ -1,4 +1,4 @@
-import { readInputLines } from '../shared/utils';
+import { memoize, readInputLines } from '../shared/utils';
 
 type Positions = [number, number];
 type Player = { pos: number; score: number };
@@ -50,7 +50,10 @@ const branches: [number, number][] = [
     [1, 9],
 ];
 
-const wins = (game: GameState): [number, number] => {
+const serialize = ([{ 0: one, 1: two }, turn]: GameState): string =>
+    `${one.pos}_${one.score}_${two.pos}_${two.score}_${turn}`;
+
+const wins = memoize((game: GameState): [number, number] => {
     const [s1, s2] = scores(game);
     if (s1 >= 21) {
         return [1, 0];
@@ -67,7 +70,7 @@ const wins = (game: GameState): [number, number] => {
         },
         [0, 0],
     );
-};
+}, serialize);
 
 const part1 = ([one, two]: Positions): number =>
     play([{ 0: { pos: one, score: 0 }, 1: { pos: two, score: 0 } }, 0]);
