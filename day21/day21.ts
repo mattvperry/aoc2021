@@ -3,7 +3,7 @@ import { mod, readInputLines } from '../shared/utils';
 type Positions = [number, number];
 type Die = number;
 type Player = { position: number; score: number };
-type GameState = [{ 0: Player; 1: Player }, Die, 0 | 1];
+type GameState = [{ 0: Player; 1: Player }, 0 | 1];
 
 const parse = (lines: string[]): Positions =>
     lines.map(l => parseInt(l.substring(28), 10)) as Positions;
@@ -16,15 +16,15 @@ const roll = (die: Die): [number, Die] => {
     return [next, value];
 };
 
-const step = ([players, die, turn]: GameState): GameState => {
-    const [r, d] = roll(die);
+const step = ([players, turn]: GameState, r: number): GameState => {
     const player = players[turn];
     const position = mod1(player.position + r, 10);
     const score = player.score + position;
-    return [{ ...players, [turn]: { position, score } }, d, turn === 0 ? 1 : 0];
+    return [{ ...players, [turn]: { position, score } }, turn === 0 ? 1 : 0];
 };
 
-const play = (game: GameState): number => {
+const play = (game: GameState, die: Die): number => {
+    let r = 0;
     let turns = 0;
     while (true) {
         const [
@@ -38,17 +38,17 @@ const play = (game: GameState): number => {
             return Math.min(s1, s2) * (turns * 3);
         }
 
-        game = step(game);
+        [r, die] = roll(die);
+        game = step(game, r);
         turns = turns + 1;
     }
 };
 
 const part1 = ([one, two]: Positions): number =>
-    play([
-        { 0: { position: one, score: 0 }, 1: { position: two, score: 0 } },
+    play(
+        [{ 0: { position: one, score: 0 }, 1: { position: two, score: 0 } }, 0],
         1,
-        0,
-    ]);
+    );
 
 (async () => {
     const input = await readInputLines('day21');
