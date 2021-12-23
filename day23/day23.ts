@@ -2,7 +2,7 @@ type Type = 'A' | 'B' | 'C' | 'D';
 type Space = Type | '_';
 type Hallway = Space[];
 type Metadata = { owner: Type; idx: number; entrance: number; energy: number };
-type Room = `${Space}${Space}`;
+type Room = `${Space}${Space}${Space}${Space}`;
 type Rooms = [Room, Room, Room, Room];
 type State = [Hallway, Rooms];
 type StateS = string;
@@ -62,7 +62,16 @@ function* next([hall, rooms]: State): IterableIterator<[number, State]> {
 
         const { idx, entrance, energy } = metadataByOwner[a];
         const roomS = rooms[idx];
-        const d = roomS === '__' ? 2 : roomS === `_${a}` ? 1 : 0;
+        const d =
+            roomS === '____'
+                ? 4
+                : roomS === `___${a}`
+                ? 3
+                : roomS === `__${a}${a}`
+                ? 2
+                : roomS === `_${a}${a}${a}`
+                ? 1
+                : 0;
         if (d === 0) {
             continue;
         }
@@ -80,7 +89,7 @@ function* next([hall, rooms]: State): IterableIterator<[number, State]> {
             [
                 hall.map((s, i) => (i === h ? '_' : s)),
                 rooms.map((r, i) =>
-                    i === idx ? (d === 2 ? '_' : a) + a : r,
+                    i === idx ? '_'.repeat(d - 1) + a.repeat(4 - d + 1) : r,
                 ) as Rooms,
             ],
         ];
@@ -89,16 +98,21 @@ function* next([hall, rooms]: State): IterableIterator<[number, State]> {
     // Can the outermost room occupants move to the hall?
     for (let r = 0; r < rooms.length; ++r) {
         const room = rooms[r];
-        if (room === '__') {
+        if (room === '____') {
             continue;
         }
 
         const entrance = idxToEntrance(r);
-        const [d, a] =
-            room[0] === '_' ? [2, room[1] as Type] : [1, room[0] as Type];
+        const [d, a] = room.startsWith('___')
+            ? [4, room[3] as Type]
+            : room.startsWith('__')
+            ? [3, room[2] as Type]
+            : room.startsWith('_')
+            ? [2, room[1] as Type]
+            : [1, room[0] as Type];
         const { energy } = metadataByOwner[a];
         const newRooms = rooms.map((x, i) =>
-            i === r ? (d === 2 ? '__' : '_' + room[1]) : x,
+            i === r ? '_'.repeat(d) + room.substring(d) : x,
         ) as Rooms;
 
         // Turn left
@@ -170,7 +184,10 @@ const astar = (state: State): number => {
 };
 
 (async () => {
-    const state: State = [new Array(11).fill('_'), ['CC', 'AA', 'BD', 'DB']];
+    const state: State = [
+        new Array(11).fill('_'),
+        ['CDDC', 'ACBA', 'BBAD', 'DACB'],
+    ];
 
     console.log(astar(state));
 })();
