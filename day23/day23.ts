@@ -1,3 +1,5 @@
+import { sum } from '../shared/utils';
+
 type Type = 'A' | 'B' | 'C' | 'D';
 type Space = Type | '_';
 type Hallway = Space[];
@@ -7,20 +9,12 @@ type Rooms = [Room, Room, Room, Room];
 type State = [Hallway, Rooms];
 type StateS = string;
 
-const metadata: Metadata[] = [
-    { owner: 'A', idx: 0, entrance: 2, energy: 1 },
-    { owner: 'B', idx: 1, entrance: 4, energy: 10 },
-    { owner: 'C', idx: 2, entrance: 6, energy: 100 },
-    { owner: 'D', idx: 3, entrance: 8, energy: 1000 },
-];
-
-const metadataByOwner = Object.fromEntries(
-    metadata.map(m => [m.owner, m]),
-) as Record<Type, Metadata>;
-
-const metadataByIdx = Object.fromEntries(
-    metadata.map(m => [m.idx, m]),
-) as Record<number, Metadata>;
+const metadata: Record<Type, Metadata> = {
+    A: { owner: 'A', idx: 0, entrance: 2, energy: 1 },
+    B: { owner: 'B', idx: 1, entrance: 4, energy: 10 },
+    C: { owner: 'C', idx: 2, entrance: 6, energy: 100 },
+    D: { owner: 'D', idx: 3, entrance: 8, energy: 1000 },
+};
 
 const toStr = ([hallway, rooms]: State): StateS =>
     `${hallway.join('')}|${rooms.join(',')}`;
@@ -29,7 +23,7 @@ const fromStr = (state: StateS): State => {
     return [h.split('') as Hallway, r.split(',') as Rooms];
 };
 
-const idxToEntrance = (i: number): number => i * 2 + 2;
+const idxToExit = (i: number): number => i * 2 + 2;
 
 const score = ([hall, rooms]: State): number =>
     hall.reduce((acc, curr, i) => {
@@ -37,21 +31,25 @@ const score = ([hall, rooms]: State): number =>
             return acc;
         }
 
-        const { entrance, energy } = metadataByOwner[curr];
+        const { entrance, energy } = metadata[curr];
         return acc + Math.abs(entrance - i) * energy;
     }, 0) +
-    rooms.reduce((acc, curr, i) => {
-        const { owner, energy } = metadataByIdx[i];
-        const incorrect = curr.split('').filter(s => s !== owner).length;
-        return acc + incorrect * energy;
-    }, 0);
+    sum(
+        rooms.map((r, i) => {
+            const exit = idxToExit(i);
+            return r.split('').reduce((acc, curr, ir) => {
+                if (curr === '_') {
+                    return acc;
+                }
 
-const isFinal = ([, rooms]: State): boolean =>
-    rooms.every((r, i) =>
-        r
-            .split('')
-            .every(s => s !== '_' && i === metadataByOwner[s as Type].idx),
+                const { entrance, energy } = metadata[curr as Type];
+                return acc + energy * (Math.abs(entrance - exit) + ir);
+            }, 0);
+        }),
     );
+
+const isFinal = ([, [a, b, c, d]]: State): boolean =>
+    a === 'AAAA' && b === 'BBBB' && c === 'CCCC' && d === 'DDDD';
 
 function* next([hall, rooms]: State): IterableIterator<[number, State]> {
     // Can any hallway pieces move to rooms?
@@ -61,7 +59,7 @@ function* next([hall, rooms]: State): IterableIterator<[number, State]> {
             continue;
         }
 
-        const { idx, entrance, energy } = metadataByOwner[a];
+        const { idx, entrance, energy } = metadata[a];
         const roomS = rooms[idx];
         const d =
             roomS === '____'
@@ -103,7 +101,7 @@ function* next([hall, rooms]: State): IterableIterator<[number, State]> {
             continue;
         }
 
-        const entrance = idxToEntrance(r);
+        const exit = idxToExit(r);
         const [d, a] = room.startsWith('___')
             ? [4, room[3] as Type]
             : room.startsWith('__')
@@ -111,13 +109,13 @@ function* next([hall, rooms]: State): IterableIterator<[number, State]> {
             : room.startsWith('_')
             ? [2, room[1] as Type]
             : [1, room[0] as Type];
-        const { energy } = metadataByOwner[a];
+        const { energy } = metadata[a];
         const newRooms = rooms.map((x, i) =>
             i === r ? '_'.repeat(d) + room.substring(d) : x,
         ) as Rooms;
 
         // Turn left
-        for (let h = entrance - 1; h >= 0; --h) {
+        for (let h = exit - 1; h >= 0; --h) {
             if (h === 2 || h === 4 || h === 6 || h === 8) {
                 continue;
             }
@@ -128,13 +126,13 @@ function* next([hall, rooms]: State): IterableIterator<[number, State]> {
             }
 
             yield [
-                energy * (d + (entrance - h)),
+                energy * (d + (exit - h)),
                 [hall.map((s, i) => (i === h ? a : s)), newRooms],
             ];
         }
 
         // Turn right
-        for (let h = entrance + 1; h < hall.length; ++h) {
+        for (let h = exit + 1; h < hall.length; ++h) {
             if (h === 2 || h === 4 || h === 6 || h === 8) {
                 continue;
             }
@@ -145,7 +143,7 @@ function* next([hall, rooms]: State): IterableIterator<[number, State]> {
             }
 
             yield [
-                energy * (d + (h - entrance)),
+                energy * (d + (h - exit)),
                 [hall.map((s, i) => (i === h ? a : s)), newRooms],
             ];
         }
