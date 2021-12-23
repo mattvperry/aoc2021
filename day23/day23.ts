@@ -7,19 +7,20 @@ type Rooms = [Room, Room, Room, Room];
 type State = [Hallway, Rooms];
 type StateS = string;
 
-const metadataByOwner: Record<Type, Metadata> = {
-    A: { owner: 'A', idx: 0, entrance: 2, energy: 1 },
-    B: { owner: 'B', idx: 1, entrance: 4, energy: 10 },
-    C: { owner: 'C', idx: 2, entrance: 6, energy: 100 },
-    D: { owner: 'D', idx: 3, entrance: 8, energy: 1000 },
-};
+const metadata: Metadata[] = [
+    { owner: 'A', idx: 0, entrance: 2, energy: 1 },
+    { owner: 'B', idx: 1, entrance: 4, energy: 10 },
+    { owner: 'C', idx: 2, entrance: 6, energy: 100 },
+    { owner: 'D', idx: 3, entrance: 8, energy: 1000 },
+];
 
-const metadataByIdx: Record<number, Metadata> = {
-    0: { owner: 'A', idx: 0, entrance: 2, energy: 1 },
-    1: { owner: 'B', idx: 1, entrance: 4, energy: 10 },
-    2: { owner: 'C', idx: 2, entrance: 6, energy: 100 },
-    3: { owner: 'D', idx: 3, entrance: 8, energy: 1000 },
-};
+const metadataByOwner = Object.fromEntries(
+    metadata.map(m => [m.owner, m]),
+) as Record<Type, Metadata>;
+
+const metadataByIdx = Object.fromEntries(
+    metadata.map(m => [m.idx, m]),
+) as Record<number, Metadata>;
 
 const toStr = ([hallway, rooms]: State): StateS =>
     `${hallway.join('')}|${rooms.join(',')}`;
